@@ -1,3 +1,16 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — ícones da navegação inferior (lucide-react)
+# IMPORTANTE: rode antes  ->  npm install lucide-react
+set -e
+
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+if ! grep -q "lucide-react" package.json; then
+  echo "AVISO: lucide-react não está instalado. Rode:  npm install lucide-react"
+fi
+echo "Atualizando ícones da navegação..."
+
+mkdir -p "src/components/ui"
+cat > "src/components/ui/BottomNav.tsx" <<'__PLANT_EOF__'
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -39,3 +52,7 @@ export function BottomNav() {
     </nav>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/ui/BottomNav.tsx"
+echo ""
+echo "Feito. Reinicie o npm run dev se estiver rodando."
