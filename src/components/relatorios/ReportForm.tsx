@@ -30,6 +30,8 @@ export function ReportForm({ report }: { report?: Report }) {
   const [fotosAntes, setFotosAntes] = useState<string[]>(report?.fotosAntes ?? []);
   const [fotosDepois, setFotosDepois] = useState<string[]>(report?.fotosDepois ?? []);
 
+  const [saving, setSaving] = useState(false);
+
   const toggle = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
@@ -44,7 +46,8 @@ export function ReportForm({ report }: { report?: Report }) {
     });
   };
 
-  const salvar = () => {
+  const salvar = async () => {
+    setSaving(true);
     const payload = {
       condo,
       data: fmtData(data),
@@ -58,12 +61,17 @@ export function ReportForm({ report }: { report?: Report }) {
       fotosAntes,
       fotosDepois,
     };
-    if (report) {
-      update(report.id, payload);
-      router.push(`/admin/relatorios/${report.id}`);
-    } else {
-      const novo = add(payload);
-      router.push(`/admin/relatorios/${novo.id}`);
+    try {
+      if (report) {
+        await update(report.id, payload);
+        router.push(`/admin/relatorios/${report.id}`);
+      } else {
+        const novo = await add(payload);
+        router.push(`/admin/relatorios/${novo.id}`);
+      }
+    } catch (e) {
+      setSaving(false);
+      alert("Não foi possível salvar: " + (e instanceof Error ? e.message : "erro desconhecido"));
     }
   };
 
@@ -141,7 +149,9 @@ export function ReportForm({ report }: { report?: Report }) {
 
       <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md gap-3 border-t border-linha bg-surface px-[18px] pb-4 pt-3">
         <Button variant="ghost" onClick={() => router.back()}>Cancelar</Button>
-        <Button block onClick={salvar}>{editing ? "Salvar alterações" : "Salvar relatório"}</Button>
+        <Button block disabled={saving} onClick={salvar}>
+          {saving ? "Salvando…" : editing ? "Salvar alterações" : "Salvar relatório"}
+        </Button>
       </div>
     </div>
   );

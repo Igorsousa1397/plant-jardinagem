@@ -5,7 +5,7 @@ import { ReportCard } from "@/components/relatorios/ReportCard";
 import { Agenda } from "@/components/relatorios/Agenda";
 
 export default function HomePage() {
-  const { reports } = useReports();
+  const { reports, loading, error } = useReports();
 
   return (
     <div className="pb-28">
@@ -23,18 +23,33 @@ export default function HomePage() {
         </Link>
       </header>
 
+      {error && (
+        <p className="mx-[18px] rounded-[10px] bg-erroBg px-3 py-2 text-sm font-medium text-erro">{error}</p>
+      )}
+
       <section className="px-[18px]">
         <h2 className="pb-2 pt-3 font-mono text-[11px] uppercase tracking-wider text-verde-600">
           Agenda · próximos clientes
         </h2>
-        <Agenda reports={reports} />
+        {loading ? <Skeleton h={64} /> : <Agenda reports={reports} />}
       </section>
 
       <section className="px-[18px]">
         <h2 className="pb-2 pt-6 font-mono text-[11px] uppercase tracking-wider text-verde-600">Relatórios</h2>
-        <div className="flex flex-col gap-3.5">
-          {reports.map((r) => <ReportCard key={r.id} r={r} />)}
-        </div>
+        {loading ? (
+          <div className="flex flex-col gap-3.5">
+            <Skeleton h={180} />
+            <Skeleton h={180} />
+          </div>
+        ) : reports.length === 0 ? (
+          <p className="rounded-2xl border border-linha bg-surface p-4 text-sm text-tintaMuda">
+            Nenhum relatório ainda. Toque no + para criar o primeiro.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3.5">
+            {reports.map((r) => <ReportCard key={r.id} r={r} />)}
+          </div>
+        )}
       </section>
 
       <div className="pointer-events-none fixed inset-x-0 bottom-[84px] z-30 mx-auto flex max-w-md justify-end px-[18px]">
@@ -46,4 +61,8 @@ export default function HomePage() {
       </div>
     </div>
   );
+}
+
+function Skeleton({ h }: { h: number }) {
+  return <div className="animate-pulse rounded-2xl border border-linha bg-surface2" style={{ height: h }} />;
 }

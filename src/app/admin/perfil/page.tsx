@@ -1,14 +1,31 @@
 "use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { Cliente } from "@/types";
 import { useReports } from "@/components/relatorios/store";
-import { SEED_CLIENTES } from "@/data/seed";
+import { listClientes } from "@/lib/clientes";
+import { createClient } from "@/lib/supabase/client";
 import { EMPRESA } from "@/lib/constants";
 import { soDigitos } from "@/lib/utils";
 
 export default function PerfilPage() {
   const router = useRouter();
   const { arquivados } = useReports();
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+
+  useEffect(() => {
+    listClientes()
+      .then(setClientes)
+      .catch(() => setClientes([]));
+  }, []);
+
+  const sair = async () => {
+    const sb = createClient();
+    await sb.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <div className="pb-28">
@@ -17,7 +34,6 @@ export default function PerfilPage() {
         <h1 className="font-display text-[22px] font-semibold text-verde-900">Perfil</h1>
       </header>
 
-      {/* Cartão do admin */}
       <div className="mx-[18px] mt-1.5 flex items-center gap-3.5 rounded-2xl border border-linha bg-surface p-4 shadow-s2">
         <div className="grid h-14 w-14 flex-none place-items-center rounded-full bg-verde-700 text-lg font-bold text-white">CL</div>
         <div className="min-w-0">
@@ -27,7 +43,6 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* Arquivados */}
       <Link
         href="/admin/perfil/arquivados"
         className="mx-[18px] mt-3 flex items-center gap-3 rounded-2xl border border-linha bg-surface p-4 shadow-s1"
@@ -43,34 +58,46 @@ export default function PerfilPage() {
         <span className="text-tintaMuda">›</span>
       </Link>
 
-      {/* Clientes */}
       <h2 className="px-[18px] pb-2 pt-6 font-mono text-[11px] uppercase tracking-wider text-verde-600">Clientes</h2>
       <div className="mx-[18px] overflow-hidden rounded-2xl border border-linha bg-surface shadow-s1">
-        {SEED_CLIENTES.map((c, i) => (
-          <div key={c.id} className={`flex items-center gap-3 p-3.5 ${i > 0 ? "border-t border-linha" : ""}`}>
-            <div className="grid h-10 w-10 flex-none place-items-center rounded-[10px] bg-salviaSurface text-[13px] font-bold text-verde-700">
-              {c.nome.replace(/^(dos |da |de )/i, "").slice(0, 2).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[15px] font-semibold text-tinta">{c.nome}</div>
-              <div className="truncate text-[12px] text-tintaMuda">
-                {c.sindico ? `Síndico ${c.sindico}` : "Síndico não cadastrado"}
-                {c.telefone ? ` · ${c.telefone}` : ""}
+        {clientes.length === 0 ? (
+          <p className="p-4 text-sm text-tintaMuda">Nenhum cliente cadastrado.</p>
+        ) : (
+          clientes.map((c, i) => (
+            <div key={c.id} className={`flex items-center gap-3 p-3.5 ${i > 0 ? "border-t border-linha" : ""}`}>
+              <div className="grid h-10 w-10 flex-none place-items-center rounded-[10px] bg-salviaSurface text-[13px] font-bold text-verde-700">
+                {c.nome.replace(/^(dos |da |de )/i, "").slice(0, 2).toUpperCase()}
               </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[15px] font-semibold text-tinta">{c.nome}</div>
+                <div className="truncate text-[12px] text-tintaMuda">
+                  {c.sindico ? `Síndico ${c.sindico}` : "Síndico não cadastrado"}
+                  {c.telefone ? ` · ${c.telefone}` : ""}
+                </div>
+              </div>
+              {c.telefone && (
+                <a
+                  href={`https://wa.me/55${soDigitos(c.telefone)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`WhatsApp de ${c.nome}`}
+                  className="grid h-9 w-9 flex-none place-items-center rounded-full bg-verde-50 text-verde-700"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16v3a2 2 0 01-2 2 19 19 0 01-8-3 19 19 0 01-6-6 19 19 0 01-3-8 2 2 0 012-2h3a2 2 0 012 2c0 1 .2 2 .5 3a2 2 0 01-.5 2L9 11a16 16 0 006 6l1-1a2 2 0 012-.5c1 .3 2 .5 3 .5a2 2 0 012 2z" /></svg>
+                </a>
+              )}
             </div>
-            {c.telefone && (
-              <a
-                href={`https://wa.me/55${soDigitos(c.telefone)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`WhatsApp de ${c.nome}`}
-                className="grid h-9 w-9 flex-none place-items-center rounded-full bg-verde-50 text-verde-700"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16v3a2 2 0 01-2 2 19 19 0 01-8-3 19 19 0 01-6-6 19 19 0 01-3-8 2 2 0 012-2h3a2 2 0 012 2c0 1 .2 2 .5 3a2 2 0 01-.5 2L9 11a16 16 0 006 6l1-1a2 2 0 012-.5c1 .3 2 .5 3 .5a2 2 0 012 2z" /></svg>
-              </a>
-            )}
-          </div>
-        ))}
+          ))
+        )}
+      </div>
+
+      <div className="px-[18px] pt-6">
+        <button
+          onClick={sair}
+          className="w-full rounded-[10px] border border-linha bg-surface px-5 py-3 text-[15px] font-semibold text-erro"
+        >
+          Sair
+        </button>
       </div>
     </div>
   );
