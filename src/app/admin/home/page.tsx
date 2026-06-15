@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useReports } from "@/components/relatorios/store";
 import { ReportCard } from "@/components/relatorios/ReportCard";
-import { Agenda } from "@/components/relatorios/Agenda";
+import { AgendaSection } from "@/components/agenda/AgendaSection";
 
 export default function HomePage() {
   const { reports, loading, error } = useReports();
@@ -31,7 +31,7 @@ export default function HomePage() {
         <h2 className="pb-2 pt-3 font-mono text-[11px] uppercase tracking-wider text-verde-600">
           Agenda · próximos clientes
         </h2>
-        {loading ? <Skeleton h={64} /> : <Agenda reports={reports} />}
+        <AgendaSection />
       </section>
 
       <section className="px-[18px]">

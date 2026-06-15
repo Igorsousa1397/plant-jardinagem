@@ -3,7 +3,7 @@ export type Status = "Finalizado" | "Em andamento" | "Agendado" | "Atrasado";
 export interface Report {
   id: string;
   condo: string;
-  data: string;          // exibição dd/mm/aaaa (no banco, guarde ISO)
+  data: string;
   duracao: string;
   status: Status;
   servicos: string[];
@@ -11,16 +11,24 @@ export interface Report {
   epi: string[];
   observacoes: string;
   proximaVisita: string;
-  fotosAntes: string[];  // URLs (Supabase Storage) ou dataURL no protótipo
+  fotosAntes: string[];
   fotosDepois: string[];
   arquivado?: boolean;
 }
 
 export interface Cliente {
   id: string;
-  nome: string;          // condomínio
+  nome: string;
   sindico?: string;
-  telefone?: string;     // formato exibição; só dígitos pra wa.me
+  telefone?: string;
+}
+
+export interface Agendamento {
+  id: string;
+  clienteId?: string;
+  condo: string;
+  data: string;        // dd/mm/aaaa
+  observacao: string;
 }
 
 export type Papel = "admin" | "funcionario";
