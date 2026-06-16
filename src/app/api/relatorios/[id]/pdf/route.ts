@@ -23,7 +23,18 @@ interface Row {
   fotos_depois: string[] | null;
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+async function carregarLogo(origin: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(`${origin}/icons/icon-512.png`);
+    if (!res.ok) return undefined;
+    const buf = Buffer.from(await res.arrayBuffer());
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   const sb = createClient();
   const {
     data: { user },
@@ -49,7 +60,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     fotosDepois: r.fotos_depois ?? [],
   };
 
-  const buffer = await renderToBuffer(RelatorioPDF({ report }));
+  const logoSrc = await carregarLogo(new URL(req.url).origin);
+  const buffer = await renderToBuffer(RelatorioPDF({ report, logoSrc }));
   const slug = report.condo.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
   return new NextResponse(new Uint8Array(buffer), {
