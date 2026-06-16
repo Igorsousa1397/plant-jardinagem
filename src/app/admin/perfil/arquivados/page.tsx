@@ -1,11 +1,29 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useReports } from "@/components/relatorios/store";
 import { ReportCard } from "@/components/relatorios/ReportCard";
+import type { Cliente } from "@/types";
+import { listClientesArquivados, restoreCliente } from "@/lib/clientes";
 
 export default function ArquivadosPage() {
   const router = useRouter();
   const { arquivados } = useReports();
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+
+  const recarregar = () => {
+    listClientesArquivados().then(setClientes).catch(() => setClientes([]));
+  };
+  useEffect(() => {
+    recarregar();
+  }, []);
+
+  const restaurar = async (id: string) => {
+    await restoreCliente(id);
+    setClientes((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const vazio = arquivados.length === 0 && clientes.length === 0;
 
   return (
     <div className="pb-28">
@@ -14,15 +32,44 @@ export default function ArquivadosPage() {
         <h1 className="font-display text-[22px] font-semibold text-verde-900">Arquivados</h1>
       </header>
 
-      {arquivados.length === 0 ? (
+      {vazio ? (
         <div className="px-8 py-16 text-center">
           <p className="font-display text-lg font-semibold text-verde-900">Nada arquivado</p>
-          <p className="mt-1 text-sm text-tintaMuda">Relatórios que você arquivar aparecem aqui. Use o menu ⋮ no card.</p>
+          <p className="mt-1 text-sm text-tintaMuda">Relatórios e clientes que você arquivar aparecem aqui.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3.5 px-[18px] pt-1.5">
-          {arquivados.map((r) => <ReportCard key={r.id} r={r} archived />)}
-        </div>
+        <>
+          {arquivados.length > 0 && (
+            <>
+              <h2 className="px-[18px] pb-2 pt-2 font-mono text-[11px] uppercase tracking-wider text-verde-600">Relatórios</h2>
+              <div className="flex flex-col gap-3.5 px-[18px]">
+                {arquivados.map((r) => <ReportCard key={r.id} r={r} archived />)}
+              </div>
+            </>
+          )}
+
+          {clientes.length > 0 && (
+            <>
+              <h2 className="px-[18px] pb-2 pt-6 font-mono text-[11px] uppercase tracking-wider text-verde-600">Clientes</h2>
+              <div className="mx-[18px] overflow-hidden rounded-2xl border border-linha bg-surface shadow-s1">
+                {clientes.map((c, i) => (
+                  <div key={c.id} className={`flex items-center gap-3 p-3.5 ${i > 0 ? "border-t border-linha" : ""}`}>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[15px] font-semibold text-tinta">{c.nome}</div>
+                      <div className="truncate text-[12px] text-tintaMuda">
+                        {c.sindico ? `Síndico ${c.sindico}` : "Síndico não cadastrado"}
+                        {c.telefone ? ` · ${c.telefone}` : ""}
+                      </div>
+                    </div>
+                    <button onClick={() => restaurar(c.id)} className="flex-none rounded-full bg-verde-50 px-3 py-1.5 text-[12px] font-semibold text-verde-700">
+                      Restaurar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   );

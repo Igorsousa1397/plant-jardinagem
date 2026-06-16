@@ -1,24 +1,31 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 import type { Cliente } from "@/types";
 import { useReports } from "@/components/relatorios/store";
 import { listClientes } from "@/lib/clientes";
 import { createClient } from "@/lib/supabase/client";
 import { EMPRESA } from "@/lib/constants";
 import { soDigitos } from "@/lib/utils";
+import { ClienteSheet, type SheetAlvo } from "@/components/clientes/ClienteSheet";
 
 export default function PerfilPage() {
   const router = useRouter();
   const { arquivados } = useReports();
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [sheet, setSheet] = useState<SheetAlvo>(null);
 
-  useEffect(() => {
+  const recarregar = useCallback(() => {
     listClientes()
       .then(setClientes)
       .catch(() => setClientes([]));
   }, []);
+
+  useEffect(() => {
+    recarregar();
+  }, [recarregar]);
 
   const sair = async () => {
     const sb = createClient();
@@ -52,19 +59,33 @@ export default function PerfilPage() {
         </div>
         <div className="flex-1">
           <div className="text-[15px] font-semibold text-tinta">Arquivados</div>
-          <div className="text-[12px] text-tintaMuda">Relatórios fora da lista principal</div>
+          <div className="text-[12px] text-tintaMuda">Relatórios e clientes fora da lista</div>
         </div>
         <span className="rounded-full bg-verde-50 px-2.5 py-1 font-mono text-[12px] font-semibold text-verde-700">{arquivados.length}</span>
         <span className="text-tintaMuda">›</span>
       </Link>
 
-      <h2 className="px-[18px] pb-2 pt-6 font-mono text-[11px] uppercase tracking-wider text-verde-600">Clientes</h2>
+      <div className="flex items-center justify-between px-[18px] pb-2 pt-6">
+        <h2 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Clientes</h2>
+        <button
+          onClick={() => setSheet("novo")}
+          aria-label="Novo cliente"
+          className="grid h-8 w-8 place-items-center rounded-full bg-verde-700 text-white shadow-s1"
+        >
+          <Plus size={18} />
+        </button>
+      </div>
+
       <div className="mx-[18px] overflow-hidden rounded-2xl border border-linha bg-surface shadow-s1">
         {clientes.length === 0 ? (
-          <p className="p-4 text-sm text-tintaMuda">Nenhum cliente cadastrado.</p>
+          <p className="p-4 text-sm text-tintaMuda">Nenhum cliente cadastrado. Toque no + para adicionar.</p>
         ) : (
           clientes.map((c, i) => (
-            <div key={c.id} className={`flex items-center gap-3 p-3.5 ${i > 0 ? "border-t border-linha" : ""}`}>
+            <div
+              key={c.id}
+              onClick={() => setSheet(c)}
+              className={`flex cursor-pointer items-center gap-3 p-3.5 ${i > 0 ? "border-t border-linha" : ""}`}
+            >
               <div className="grid h-10 w-10 flex-none place-items-center rounded-[10px] bg-salviaSurface text-[13px] font-bold text-verde-700">
                 {c.nome.replace(/^(dos |da |de )/i, "").slice(0, 2).toUpperCase()}
               </div>
@@ -81,6 +102,7 @@ export default function PerfilPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`WhatsApp de ${c.nome}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="grid h-9 w-9 flex-none place-items-center rounded-full bg-verde-50 text-verde-700"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16v3a2 2 0 01-2 2 19 19 0 01-8-3 19 19 0 01-6-6 19 19 0 01-3-8 2 2 0 012-2h3a2 2 0 012 2c0 1 .2 2 .5 3a2 2 0 01-.5 2L9 11a16 16 0 006 6l1-1a2 2 0 012-.5c1 .3 2 .5 3 .5a2 2 0 012 2z" /></svg>
@@ -92,13 +114,12 @@ export default function PerfilPage() {
       </div>
 
       <div className="px-[18px] pt-6">
-        <button
-          onClick={sair}
-          className="w-full rounded-[10px] border border-linha bg-surface px-5 py-3 text-[15px] font-semibold text-erro"
-        >
+        <button onClick={sair} className="w-full rounded-[10px] border border-linha bg-surface px-5 py-3 text-[15px] font-semibold text-erro">
           Sair
         </button>
       </div>
+
+      <ClienteSheet alvo={sheet} onClose={() => setSheet(null)} onSaved={recarregar} />
     </div>
   );
 }
