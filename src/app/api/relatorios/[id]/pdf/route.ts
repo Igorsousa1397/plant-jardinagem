@@ -25,7 +25,7 @@ interface Row {
 
 async function carregarLogo(origin: string): Promise<string | undefined> {
   try {
-    const res = await fetch(`${origin}/icons/icon-512.png`);
+    const res = await fetch(`${origin}/logo.png`);
     if (!res.ok) return undefined;
     const buf = Buffer.from(await res.arrayBuffer());
     return `data:image/png;base64,${buf.toString("base64")}`;
