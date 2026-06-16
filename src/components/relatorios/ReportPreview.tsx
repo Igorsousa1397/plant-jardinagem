@@ -103,7 +103,7 @@ export function ReportPreview({ r }: { r: Report }) {
       </article>
 
       <div className="flex gap-3 px-[18px] py-1">
-        <Button variant="gold" block onClick={() => fire("PDF gerado — pronto pra enviar")}>Gerar PDF</Button>
+        <Button variant="gold" block onClick={() => window.open(`/api/relatorios/${r.id}/pdf`, "_blank")}>Gerar PDF</Button>
         <Button block onClick={enviarWhats}>Enviar ao síndico</Button>
       </div>
 
