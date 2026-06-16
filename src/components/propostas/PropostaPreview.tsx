@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import type { Proposta } from "@/types";
 import { getProposta, deleteProposta } from "@/lib/propostas";
 import { fmtBRL, dataExtenso } from "@/lib/utils";
-import { PROPOSTA, execucaoLinhas } from "@/lib/proposta-conteudo";
+import { PROPOSTA, ESCOPOS, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
 import { Button } from "@/components/ui/Button";
 
 export function PropostaPreview({ id }: { id: string }) {
@@ -62,7 +62,7 @@ export function PropostaPreview({ id }: { id: string }) {
           <div>
             <h3 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Execução do serviço</h3>
             <ul className="mt-1 list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-tinta">
-              {execucaoLinhas(p.visitasMensais, p.equipe).map((l, i) => (
+              {(ESCOPOS[p.escopo] ?? ESCOPOS[ESCOPO_PADRAO]).execucao.map((l, i) => (
                 <li key={i}>{l}</li>
               ))}
             </ul>

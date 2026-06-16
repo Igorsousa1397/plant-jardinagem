@@ -1,7 +1,7 @@
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import type { Proposta } from "@/types";
 import { EMPRESA } from "@/lib/constants";
-import { PROPOSTA, execucaoLinhas } from "@/lib/proposta-conteudo";
+import { PROPOSTA, ESCOPOS, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
 import { fmtBRL, dataExtenso } from "@/lib/utils";
 
 const C = {
@@ -83,7 +83,7 @@ export function PropostaPDF({ proposta, logoSrc }: { proposta: Proposta; logoSrc
 
         {/* Página 3 */}
         <Text style={s.h2} break>II. EXECUÇÃO DO SERVIÇO</Text>
-        {execucaoLinhas(p.visitasMensais, p.equipe).map((l, i) => (
+        {(ESCOPOS[p.escopo] ?? ESCOPOS[ESCOPO_PADRAO]).execucao.map((l, i) => (
           <Bullet key={i}>{l}</Bullet>
         ))}
         <Text style={s.texto}>{PROPOSTA.supervisao}</Text>

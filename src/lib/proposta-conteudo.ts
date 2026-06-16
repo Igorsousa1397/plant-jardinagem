@@ -30,10 +30,32 @@ export const PROPOSTA = {
   agradecimento: "Aguardamos seu breve retorno e agradecemos a atenção.",
 };
 
-/** Linhas da seção "II. Execução do serviço", com os campos variáveis. */
-export function execucaoLinhas(visitas: number, equipe: number): string[] {
-  return [
-    `${visitas} visitas mensais com equipe de ${equipe} pessoas, dividida em duas partes: 1ª visita — parte de cima: corte de grama, poda de arbustos e limpeza; 2ª visita — parte de baixo e externa do condomínio: poda de arbustos, corte de grama e limpeza.`,
-    "2 visitas mensais de 1 jardineiro para limpeza de canteiros e supervisão geral. Essa visita é agendada (segunda a sexta-feira); na semana da visita individual não haverá visita da equipe.",
-  ];
+/**
+ * Modelos de escopo (II. Execução do Serviço) — textos fixos, selecionáveis.
+ * Para adicionar um novo modelo, basta acrescentar uma entrada aqui.
+ */
+export interface ModeloEscopo {
+  label: string;
+  execucao: string[];
 }
+
+export const ESCOPOS: Record<string, ModeloEscopo> = {
+  completo: {
+    label: "Completo · 2 visitas/mês, equipe de 7 + jardineiro",
+    execucao: [
+      "2 visitas mensais com equipe de 7 pessoas, dividida em duas partes: 1ª visita — parte de cima: corte de grama, poda de arbustos e limpeza; 2ª visita — parte de baixo e externa do condomínio: poda de arbustos, corte de grama e limpeza.",
+      "2 visitas mensais de 1 jardineiro para limpeza de canteiros e supervisão geral. Essa visita é agendada (segunda a sexta-feira); na semana da visita individual não haverá visita da equipe.",
+    ],
+  },
+  padrao: {
+    label: "Padrão · visita mensal, equipe de 5 a 6",
+    execucao: [
+      "Visita mensal com equipe de 5 a 6 pessoas para corte de grama, poda de arbustos e limpeza.",
+    ],
+  },
+};
+
+export const ESCOPO_PADRAO = "completo";
+
+/** Lista para popular o seletor no formulário. */
+export const ESCOPO_OPCOES = Object.entries(ESCOPOS).map(([valor, m]) => ({ valor, label: m.label }));

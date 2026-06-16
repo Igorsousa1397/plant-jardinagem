@@ -37,10 +37,11 @@ export interface Proposta {
   condo: string;
   data: string;          // dd/mm/aaaa
   valorMensal: number;   // ex.: 3200
-  visitasMensais: number;
-  equipe: number;
+  escopo: string;        // chave do modelo (ver ESCOPOS)
   prazoMeses: number;
   validadeDias: number;
+  visitasMensais?: number;
+  equipe?: number;
 }
 
 export type Papel = "admin" | "funcionario";

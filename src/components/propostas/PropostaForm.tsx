@@ -5,6 +5,7 @@ import type { Cliente } from "@/types";
 import { listClientes } from "@/lib/clientes";
 import { createProposta } from "@/lib/propostas";
 import { fmtData } from "@/lib/utils";
+import { ESCOPO_OPCOES, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
 import { Field, inputClass } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 
@@ -20,8 +21,7 @@ export function PropostaForm() {
   const [condo, setCondo] = useState("");
   const [dataISO, setDataISO] = useState(hojeISO());
   const [valor, setValor] = useState("3200");
-  const [visitas, setVisitas] = useState("2");
-  const [equipe, setEquipe] = useState("7");
+  const [escopo, setEscopo] = useState(ESCOPO_PADRAO);
   const [prazo, setPrazo] = useState("24");
   const [validade, setValidade] = useState("30");
   const [saving, setSaving] = useState(false);
@@ -43,8 +43,7 @@ export function PropostaForm() {
         clienteId: cli?.id,
         data: fmtData(dataISO),
         valorMensal: Number(valor) || 0,
-        visitasMensais: Number(visitas) || 0,
-        equipe: Number(equipe) || 0,
+        escopo,
         prazoMeses: Number(prazo) || 0,
         validadeDias: Number(validade) || 0,
       });
@@ -69,6 +68,15 @@ export function PropostaForm() {
             ))}
           </select>
         </Field>
+
+        <Field label="Modelo de escopo">
+          <select value={escopo} onChange={(e) => setEscopo(e.target.value)} className={inputClass}>
+            {ESCOPO_OPCOES.map((o) => (
+              <option key={o.valor} value={o.valor}>{o.label}</option>
+            ))}
+          </select>
+        </Field>
+
         <Field label="Valor mensal (R$)">
           <input type="number" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} className={inputClass} />
         </Field>
@@ -76,12 +84,6 @@ export function PropostaForm() {
           <input type="date" value={dataISO} onChange={(e) => setDataISO(e.target.value)} className={inputClass} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Visitas / mês">
-            <input type="number" value={visitas} onChange={(e) => setVisitas(e.target.value)} className={inputClass} />
-          </Field>
-          <Field label="Equipe (pessoas)">
-            <input type="number" value={equipe} onChange={(e) => setEquipe(e.target.value)} className={inputClass} />
-          </Field>
           <Field label="Prazo (meses)">
             <input type="number" value={prazo} onChange={(e) => setPrazo(e.target.value)} className={inputClass} />
           </Field>
