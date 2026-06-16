@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — calendário recolhível (faixa com hoje + próxima visita)
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando agenda..."
+
+cat > "src/components/agenda/AgendaSection.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -193,3 +200,7 @@ export function AgendaSection() {
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/agenda/AgendaSection.tsx"
+echo ""
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
