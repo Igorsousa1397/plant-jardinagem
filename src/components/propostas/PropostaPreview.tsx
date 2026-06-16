@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import type { Proposta } from "@/types";
 import { getProposta, deleteProposta } from "@/lib/propostas";
 import { fmtBRL, dataExtenso } from "@/lib/utils";
@@ -36,6 +36,9 @@ export function PropostaPreview({ id }: { id: string }) {
       <header className="flex items-center gap-3 px-[18px] pb-1.5 pt-[18px]">
         <button onClick={() => router.push("/admin/propostas")} className="grid h-[34px] w-[34px] place-items-center rounded-full border border-linha bg-surface text-[22px] leading-none text-verde-800">‹</button>
         <span className="flex-1 font-mono text-[11px] uppercase tracking-wider text-tintaMuda">Proposta</span>
+        <button onClick={() => router.push(`/admin/propostas/${p.id}/editar`)} aria-label="Editar" className="grid h-[34px] w-[34px] place-items-center rounded-full border border-linha bg-surface text-verde-800 hover:bg-verde-50">
+          <Pencil size={15} />
+        </button>
         <button onClick={remover} aria-label="Excluir" className="grid h-[34px] w-[34px] place-items-center rounded-full border border-linha bg-surface text-tintaMuda hover:bg-erroBg hover:text-erro">
           <Trash2 size={16} />
         </button>

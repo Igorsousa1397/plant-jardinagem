@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Cliente } from "@/types";
+import type { Cliente, Proposta } from "@/types";
 import { listClientes } from "@/lib/clientes";
-import { createProposta } from "@/lib/propostas";
-import { fmtData } from "@/lib/utils";
+import { createProposta, updateProposta } from "@/lib/propostas";
+import { fmtData, toISO } from "@/lib/utils";
 import { MANUTENCAO_OPCOES, EXECUCAO_OPCOES, EXECUCAO_PADRAO, interpola } from "@/lib/proposta-conteudo";
 import { Field, inputClass } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
@@ -24,18 +24,30 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: ()
   );
 }
 
-export function PropostaForm() {
+export function PropostaForm({ inicial }: { inicial?: Proposta }) {
   const router = useRouter();
+  const edicao = !!inicial;
+
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [cliente, setCliente] = useState("");
-  const [dataISO, setDataISO] = useState(hojeISO());
-  const [valor, setValor] = useState("3200");
-  const [visitas, setVisitas] = useState("2");
-  const [equipe, setEquipe] = useState("7");
-  const [prazo, setPrazo] = useState("24");
-  const [validade, setValidade] = useState("30");
-  const [execSel, setExecSel] = useState<string[]>(EXECUCAO_PADRAO);
-  const [manutSel, setManutSel] = useState<number[]>(MANUTENCAO_OPCOES.map((_, i) => i));
+  const [cliente, setCliente] = useState(inicial?.condo ?? "");
+  const [dataISO, setDataISO] = useState(inicial ? toISO(inicial.data) : hojeISO());
+  const [valor, setValor] = useState(inicial ? String(inicial.valorMensal) : "3200");
+  const [visitas, setVisitas] = useState(inicial ? String(inicial.visitasMensais) : "2");
+  const [equipe, setEquipe] = useState(inicial ? String(inicial.equipe) : "7");
+  const [prazo, setPrazo] = useState(inicial ? String(inicial.prazoMeses) : "24");
+  const [validade, setValidade] = useState(inicial ? String(inicial.validadeDias) : "30");
+  const [execSel, setExecSel] = useState<string[]>(() => {
+    if (!inicial) return EXECUCAO_PADRAO;
+    return EXECUCAO_OPCOES.filter((o) =>
+      inicial.execucao.includes(interpola(o.texto, inicial.visitasMensais, inicial.equipe))
+    ).map((o) => o.id);
+  });
+  const [manutSel, setManutSel] = useState<number[]>(() => {
+    if (!inicial) return MANUTENCAO_OPCOES.map((_, i) => i);
+    return MANUTENCAO_OPCOES.map((m, i) => ({ m, i }))
+      .filter(({ m }) => inicial.servicos.includes(m))
+      .map(({ i }) => i);
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -57,7 +69,7 @@ export function PropostaForm() {
       const cli = clientes.find((c) => c.nome.toLowerCase() === cliente.trim().toLowerCase());
       const execucao = EXECUCAO_OPCOES.filter((o) => execSel.includes(o.id)).map((o) => interpola(o.texto, nV, nE));
       const servicos = MANUTENCAO_OPCOES.filter((_, i) => manutSel.includes(i));
-      const nova = await createProposta({
+      const dados = {
         condo: cliente.trim(),
         clienteId: cli?.id,
         data: fmtData(dataISO),
@@ -68,8 +80,14 @@ export function PropostaForm() {
         execucao,
         prazoMeses: Number(prazo) || 0,
         validadeDias: Number(validade) || 0,
-      });
-      router.push(`/admin/propostas/${nova.id}`);
+      };
+      if (inicial) {
+        await updateProposta(inicial.id, dados);
+        router.push(`/admin/propostas/${inicial.id}`);
+      } else {
+        const nova = await createProposta(dados);
+        router.push(`/admin/propostas/${nova.id}`);
+      }
     } finally {
       setSaving(false);
     }
@@ -79,7 +97,7 @@ export function PropostaForm() {
     <div className="pb-28">
       <header className="flex items-center gap-3 px-[18px] pb-1.5 pt-[18px]">
         <button onClick={() => router.back()} className="grid h-[34px] w-[34px] place-items-center rounded-full border border-linha bg-surface text-[22px] leading-none text-verde-800">‹</button>
-        <span className="font-mono text-[11px] uppercase tracking-wider text-tintaMuda">Nova proposta</span>
+        <span className="font-mono text-[11px] uppercase tracking-wider text-tintaMuda">{edicao ? "Editar proposta" : "Nova proposta"}</span>
       </header>
 
       <div className="flex flex-col gap-1 px-[18px] pt-2">
@@ -147,7 +165,9 @@ export function PropostaForm() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md gap-3 border-t border-linha bg-surface px-[18px] py-3">
         <Button variant="ghost" onClick={() => router.back()}>Cancelar</Button>
-        <Button block disabled={saving} onClick={salvar}>{saving ? "Salvando…" : "Gerar proposta"}</Button>
+        <Button block disabled={saving} onClick={salvar}>
+          {saving ? "Salvando…" : edicao ? "Salvar alterações" : "Gerar proposta"}
+        </Button>
       </div>
     </div>
   );
