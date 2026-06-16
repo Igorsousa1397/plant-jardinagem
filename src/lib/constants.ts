@@ -37,8 +37,10 @@ export const STATUS_STYLES: Record<Status, string> = {
 
 export const EMPRESA = {
   nome: "Plant Jardinagem e Paisagismo",
+  prestador: "Plant Jardinagem - Manutenção e Paisagismo / Claiton",
   cnpj: "42.704.559/0001-42",
   telefone: "(11) 97179-2236",
   whatsapp: "5511971792236",
   email: "plantjardinagem@gmail.com",
+  instagram: "@plantjardinagem",
 };
