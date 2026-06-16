@@ -1,22 +1,42 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useReports } from "@/components/relatorios/store";
 import { ReportCard } from "@/components/relatorios/ReportCard";
 import type { Cliente } from "@/types";
 import { listClientesArquivados, restoreCliente } from "@/lib/clientes";
+import { parseBR } from "@/lib/utils";
+
+const MES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+
+function chaveMes(data: string): string | null {
+  const d = parseBR(data);
+  if (!d) return null;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 
 export default function ArquivadosPage() {
   const router = useRouter();
   const { arquivados } = useReports();
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [mes, setMes] = useState("todos");
 
-  const recarregar = () => {
-    listClientesArquivados().then(setClientes).catch(() => setClientes([]));
-  };
   useEffect(() => {
-    recarregar();
+    listClientesArquivados().then(setClientes).catch(() => setClientes([]));
   }, []);
+
+  const meses = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const r of arquivados) {
+      const k = chaveMes(r.data);
+      if (!k) continue;
+      const d = parseBR(r.data)!;
+      m.set(k, `${MES[d.getMonth()]}/${d.getFullYear()}`);
+    }
+    return [...m.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  }, [arquivados]);
+
+  const relatorios = mes === "todos" ? arquivados : arquivados.filter((r) => chaveMes(r.data) === mes);
 
   const restaurar = async (id: string) => {
     await restoreCliente(id);
@@ -41,10 +61,31 @@ export default function ArquivadosPage() {
         <>
           {arquivados.length > 0 && (
             <>
-              <h2 className="px-[18px] pb-2 pt-2 font-mono text-[11px] uppercase tracking-wider text-verde-600">Relatórios</h2>
-              <div className="flex flex-col gap-3.5 px-[18px]">
-                {arquivados.map((r) => <ReportCard key={r.id} r={r} archived />)}
+              <div className="flex items-center justify-between gap-3 px-[18px] pb-2 pt-2">
+                <h2 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Relatórios</h2>
+                {meses.length > 0 && (
+                  <select
+                    value={mes}
+                    onChange={(e) => setMes(e.target.value)}
+                    className="rounded-full border border-linha bg-surface px-3 py-1 text-[12px] font-semibold text-verde-800"
+                  >
+                    <option value="todos">Todos os meses</option>
+                    {meses.map(([k, label]) => (
+                      <option key={k} value={k}>{label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
+
+              {relatorios.length === 0 ? (
+                <p className="mx-[18px] rounded-2xl border border-linha bg-surface p-4 text-sm text-tintaMuda">
+                  Nenhum relatório arquivado neste mês.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3.5 px-[18px]">
+                  {relatorios.map((r) => <ReportCard key={r.id} r={r} archived />)}
+                </div>
+              )}
             </>
           )}
 

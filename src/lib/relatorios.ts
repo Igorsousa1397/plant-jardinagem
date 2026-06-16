@@ -92,3 +92,9 @@ export async function setArquivado(id: string, arquivado: boolean): Promise<void
   const { error } = await sb.from("relatorios").update({ arquivado }).eq("id", id);
   if (error) throw error;
 }
+
+export async function deleteRelatorio(id: string): Promise<void> {
+  const sb = createClient();
+  const { error } = await sb.from("relatorios").delete().eq("id", id);
+  if (error) throw error;
+}

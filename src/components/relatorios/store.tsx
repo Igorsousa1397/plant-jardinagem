@@ -12,6 +12,7 @@ interface Ctx {
   update: (id: string, patch: Omit<Report, "id">) => Promise<void>;
   archive: (id: string) => Promise<void>;
   unarchive: (id: string) => Promise<void>;
+  remove: (id: string) => Promise<void>;
   get: (id: string) => Report | undefined;
   refresh: () => Promise<void>;
 }
@@ -56,6 +57,10 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
     await api.setArquivado(id, false);
     setAll((prev) => prev.map((x) => (x.id === id ? { ...x, arquivado: false } : x)));
   };
+  const remove: Ctx["remove"] = async (id) => {
+    await api.deleteRelatorio(id);
+    setAll((prev) => prev.filter((x) => x.id !== id));
+  };
   const get: Ctx["get"] = (id) => all.find((x) => x.id === id);
 
   const reports = all.filter((x) => !x.arquivado);
@@ -63,7 +68,7 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ReportsContext.Provider
-      value={{ reports, arquivados, loading, error, add, update, archive, unarchive, get, refresh }}
+      value={{ reports, arquivados, loading, error, add, update, archive, unarchive, remove, get, refresh }}
     >
       {children}
     </ReportsContext.Provider>

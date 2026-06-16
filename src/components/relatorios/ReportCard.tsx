@@ -9,14 +9,22 @@ import { useReports } from "./store";
 
 export function ReportCard({ r, archived }: { r: Report; archived?: boolean }) {
   const router = useRouter();
-  const { archive, unarchive } = useReports();
+  const { archive, unarchive, remove } = useReports();
 
-  const menu: MenuItem[] = [
-    { label: "Editar", onSelect: () => router.push(`/admin/relatorios/${r.id}/editar`) },
-    archived
-      ? { label: "Desarquivar", onSelect: () => unarchive(r.id) }
-      : { label: "Arquivar", onSelect: () => archive(r.id), danger: true },
-  ];
+  const excluir = () => {
+    if (confirm(`Excluir o relatório de ${r.condo}? Esta ação não pode ser desfeita.`)) remove(r.id);
+  };
+
+  const menu: MenuItem[] = archived
+    ? [
+        { label: "Editar", onSelect: () => router.push(`/admin/relatorios/${r.id}/editar`) },
+        { label: "Desarquivar", onSelect: () => unarchive(r.id) },
+        { label: "Excluir", onSelect: excluir, danger: true },
+      ]
+    : [
+        { label: "Editar", onSelect: () => router.push(`/admin/relatorios/${r.id}/editar`) },
+        { label: "Arquivar", onSelect: () => archive(r.id), danger: true },
+      ];
 
   return (
     <div className="relative rounded-2xl border border-linha bg-surface shadow-s2">
