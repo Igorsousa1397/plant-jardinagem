@@ -29,3 +29,20 @@ export function parseBR(display: string): Date | null {
 export function soDigitos(s: string): string {
   return (s || "").replace(/\D/g, "");
 }
+
+/** número -> "R$ 3.200,00" */
+export function fmtBRL(n: number): string {
+  return (n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+const MESES_EXTENSO = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
+
+/** dd/mm/aaaa -> "21 de julho de 2025" */
+export function dataExtenso(display: string): string {
+  const d = parseBR(display);
+  if (!d) return display;
+  return `${d.getDate()} de ${MESES_EXTENSO[d.getMonth()]} de ${d.getFullYear()}`;
+}

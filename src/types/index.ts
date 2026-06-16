@@ -31,4 +31,16 @@ export interface Agendamento {
   observacao: string;
 }
 
+export interface Proposta {
+  id: string;
+  clienteId?: string;
+  condo: string;
+  data: string;          // dd/mm/aaaa
+  valorMensal: number;   // ex.: 3200
+  visitasMensais: number;
+  equipe: number;
+  prazoMeses: number;
+  validadeDias: number;
+}
+
 export type Papel = "admin" | "funcionario";

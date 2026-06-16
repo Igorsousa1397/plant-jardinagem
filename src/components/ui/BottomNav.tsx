@@ -14,7 +14,7 @@ const items: { href: string; label: string; Icon: LucideIcon }[] = [
 export function BottomNav() {
   const pathname = usePathname();
   // Formulários têm barra de ação própria — escondem a navegação.
-  if (pathname.endsWith("/novo") || pathname.endsWith("/editar")) return null;
+  if (pathname.endsWith("/novo") || pathname.endsWith("/nova") || pathname.endsWith("/editar")) return null;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md border-t border-linha bg-surface px-2 pb-3 pt-2">

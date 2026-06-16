@@ -43,4 +43,5 @@ export const EMPRESA = {
   whatsapp: "5511971792236",
   email: "plantjardinagem@gmail.com",
   instagram: "@plantjardinagem",
+  endereco: "Av. Benedito de Andrade, 358 - Pereira Barreto - São Paulo",
 };
