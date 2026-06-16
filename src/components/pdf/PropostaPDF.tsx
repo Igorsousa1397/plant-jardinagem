@@ -1,7 +1,7 @@
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import type { Proposta } from "@/types";
 import { EMPRESA } from "@/lib/constants";
-import { PROPOSTA, ESCOPOS, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
+import { PROPOSTA } from "@/lib/proposta-conteudo";
 import { fmtBRL, dataExtenso } from "@/lib/utils";
 
 const C = {
@@ -74,48 +74,53 @@ export function PropostaPDF({ proposta, logoSrc }: { proposta: Proposta; logoSrc
         ))}
 
         {/* Página 2 */}
-        <Text style={s.h1} break>Escopo da Proposta</Text>
-        <Text style={s.h2}>I. MANUTENÇÃO</Text>
-        <Text style={s.texto}>Serviços a serem executados:</Text>
-        {PROPOSTA.manutencao.map((m, i) => (
-          <Bullet key={i}>{m}</Bullet>
-        ))}
+        {p.servicos.length > 0 && (
+          <View break>
+            <Text style={s.h1}>Escopo da Proposta</Text>
+            <Text style={s.h2}>I. MANUTENÇÃO</Text>
+            <Text style={s.texto}>Serviços a serem executados:</Text>
+            {p.servicos.map((m, i) => (
+              <Bullet key={i}>{m}</Bullet>
+            ))}
+          </View>
+        )}
 
         {/* Página 3 */}
-        <Text style={s.h2} break>II. EXECUÇÃO DO SERVIÇO</Text>
-        {(ESCOPOS[p.escopo] ?? ESCOPOS[ESCOPO_PADRAO]).execucao.map((l, i) => (
-          <Bullet key={i}>{l}</Bullet>
-        ))}
-        <Text style={s.texto}>{PROPOSTA.supervisao}</Text>
+        <View break>
+          <Text style={s.h2}>II. EXECUÇÃO DO SERVIÇO</Text>
+          {p.execucao.map((l, i) => (
+            <Bullet key={i}>{l}</Bullet>
+          ))}
 
-        <Text style={s.h2}>III. INVESTIMENTO</Text>
-        <Text style={s.investimento}>{fmtBRL(p.valorMensal)} / Mês</Text>
+          <Text style={s.h2}>III. INVESTIMENTO</Text>
+          <Text style={s.investimento}>{fmtBRL(p.valorMensal)} / Mês</Text>
 
-        <Text style={s.h2}>IV. CONDIÇÕES GERAIS DE PAGAMENTO</Text>
-        <Text style={s.texto}>{PROPOSTA.condicoesPagamento}</Text>
+          <Text style={s.h2}>IV. CONDIÇÕES GERAIS DE PAGAMENTO</Text>
+          <Text style={s.texto}>{PROPOSTA.condicoesPagamento}</Text>
 
-        <Text style={s.h2}>V. PRAZO DE EXECUÇÃO DA PRESTAÇÃO DOS SERVIÇOS</Text>
-        <Text style={s.texto}>
-          O início e a execução da prestação dos serviços se darão após a assinatura de contrato, sendo certo que a
-          referida prestação dos serviços será pelo prazo de {p.prazoMeses} meses, podendo ser prorrogado.
-        </Text>
+          <Text style={s.h2}>V. PRAZO DE EXECUÇÃO DA PRESTAÇÃO DOS SERVIÇOS</Text>
+          <Text style={s.texto}>
+            O início e a execução da prestação dos serviços se darão após a assinatura de contrato, sendo certo que a
+            referida prestação dos serviços será pelo prazo de {p.prazoMeses} meses, podendo ser prorrogado.
+          </Text>
 
-        <Text style={s.claro}>
-          PRAZO DE VALIDADE DESTA PROPOSTA COMERCIAL: {p.validadeDias} dias contados da data de sua apresentação.
-        </Text>
-        <Text style={s.claro}>{PROPOSTA.agradecimento}</Text>
+          <Text style={s.claro}>
+            PRAZO DE VALIDADE DESTA PROPOSTA COMERCIAL: {p.validadeDias} dias contados da data de sua apresentação.
+          </Text>
+          <Text style={s.claro}>{PROPOSTA.agradecimento}</Text>
 
-        <View style={s.contatoBox}>
-          <Text style={s.contato}>Comercial</Text>
-          <Text style={s.contato}>{EMPRESA.email}</Text>
-          <Text style={s.contato}>contato: {EMPRESA.telefone}</Text>
-          <Text style={s.contato}>{EMPRESA.instagram}</Text>
-        </View>
+          <View style={s.contatoBox}>
+            <Text style={s.contato}>Comercial</Text>
+            <Text style={s.contato}>{EMPRESA.email}</Text>
+            <Text style={s.contato}>contato: {EMPRESA.telefone}</Text>
+            <Text style={s.contato}>{EMPRESA.instagram}</Text>
+          </View>
 
-        <View style={s.footer}>
-          <Text style={s.footerTxt}>PLANT JARDINAGEM E PAISAGISMO</Text>
-          <Text style={s.footerTxt}>CNPJ {EMPRESA.cnpj}</Text>
-          <Text style={s.footerTxt}>{EMPRESA.endereco}</Text>
+          <View style={s.footer}>
+            <Text style={s.footerTxt}>PLANT JARDINAGEM E PAISAGISMO</Text>
+            <Text style={s.footerTxt}>CNPJ {EMPRESA.cnpj}</Text>
+            <Text style={s.footerTxt}>{EMPRESA.endereco}</Text>
+          </View>
         </View>
       </Page>
     </Document>

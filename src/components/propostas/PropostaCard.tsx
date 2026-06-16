@@ -2,7 +2,6 @@
 import Link from "next/link";
 import type { Proposta } from "@/types";
 import { fmtBRL } from "@/lib/utils";
-import { ESCOPOS, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
 
 export function PropostaCard({ p }: { p: Proposta }) {
   return (
@@ -12,7 +11,7 @@ export function PropostaCard({ p }: { p: Proposta }) {
         <div className="flex-none font-mono text-[11px] text-tintaMuda">{p.data}</div>
       </div>
       <div className="mt-1 text-[13px] text-tintaMuda">
-        {(ESCOPOS[p.escopo] ?? ESCOPOS[ESCOPO_PADRAO]).label}
+        {p.visitasMensais} visita(s)/mês · equipe de {p.equipe} · {p.servicos.length} serviços
       </div>
       <div className="mt-2 text-[18px] font-bold text-verde-700">
         {fmtBRL(p.valorMensal)}

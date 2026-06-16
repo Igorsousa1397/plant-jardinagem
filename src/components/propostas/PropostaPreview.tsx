@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import type { Proposta } from "@/types";
 import { getProposta, deleteProposta } from "@/lib/propostas";
 import { fmtBRL, dataExtenso } from "@/lib/utils";
-import { PROPOSTA, ESCOPOS, ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
+import { PROPOSTA } from "@/lib/proposta-conteudo";
 import { Button } from "@/components/ui/Button";
 
 export function PropostaPreview({ id }: { id: string }) {
@@ -59,17 +59,26 @@ export function PropostaPreview({ id }: { id: string }) {
             </div>
           </div>
 
-          <div>
-            <h3 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Execução do serviço</h3>
-            <ul className="mt-1 list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-tinta">
-              {(ESCOPOS[p.escopo] ?? ESCOPOS[ESCOPO_PADRAO]).execucao.map((l, i) => (
-                <li key={i}>{l}</li>
-              ))}
-            </ul>
-          </div>
+          {p.execucao.length > 0 && (
+            <div>
+              <h3 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Execução do serviço</h3>
+              <ul className="mt-1 list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-tinta">
+                {p.execucao.map((l, i) => <li key={i}>{l}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {p.servicos.length > 0 && (
+            <div>
+              <h3 className="font-mono text-[11px] uppercase tracking-wider text-verde-600">Serviços de manutenção ({p.servicos.length})</h3>
+              <ul className="mt-1 list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-tinta">
+                {p.servicos.map((m, i) => <li key={i}>{m}</li>)}
+              </ul>
+            </div>
+          )}
 
           <div className="border-t border-linha pt-3 text-[12px] text-tintaMuda">
-            Prazo do contrato: {p.prazoMeses} meses · Validade da proposta: {p.validadeDias} dias
+            Prazo do contrato: {p.prazoMeses} meses · Validade: {p.validadeDias} dias
           </div>
         </div>
       </article>

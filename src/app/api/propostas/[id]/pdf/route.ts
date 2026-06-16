@@ -14,9 +14,10 @@ interface Row {
   condo: string;
   data: string;
   valor_mensal: number | string;
-  escopo: string | null;
   visitas_mensais: number;
   equipe: number;
+  servicos: string[] | null;
+  execucao: string[] | null;
   prazo_meses: number;
   validade_dias: number;
 }
@@ -49,9 +50,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     condo: r.condo,
     data: fmtData(r.data),
     valorMensal: Number(r.valor_mensal),
-    escopo: r.escopo ?? "completo",
     visitasMensais: r.visitas_mensais,
     equipe: r.equipe,
+    servicos: r.servicos ?? [],
+    execucao: r.execucao ?? [],
     prazoMeses: r.prazo_meses,
     validadeDias: r.validade_dias,
   };

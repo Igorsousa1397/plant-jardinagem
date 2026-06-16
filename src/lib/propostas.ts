@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Proposta } from "@/types";
 import { fmtData, toISO } from "@/lib/utils";
-import { ESCOPO_PADRAO } from "@/lib/proposta-conteudo";
 
 interface Row {
   id: string;
@@ -9,9 +8,10 @@ interface Row {
   condo: string;
   data: string;
   valor_mensal: number | string;
-  escopo: string | null;
   visitas_mensais: number;
   equipe: number;
+  servicos: string[] | null;
+  execucao: string[] | null;
   prazo_meses: number;
   validade_dias: number;
 }
@@ -23,11 +23,12 @@ function toProposta(r: Row): Proposta {
     condo: r.condo,
     data: fmtData(r.data),
     valorMensal: Number(r.valor_mensal),
-    escopo: r.escopo ?? ESCOPO_PADRAO,
-    prazoMeses: r.prazo_meses,
-    validadeDias: r.validade_dias,
     visitasMensais: r.visitas_mensais,
     equipe: r.equipe,
+    servicos: r.servicos ?? [],
+    execucao: r.execucao ?? [],
+    prazoMeses: r.prazo_meses,
+    validadeDias: r.validade_dias,
   };
 }
 
@@ -54,11 +55,12 @@ export async function createProposta(p: Omit<Proposta, "id">): Promise<Proposta>
       condo: p.condo,
       data: toISO(p.data),
       valor_mensal: p.valorMensal,
-      escopo: p.escopo,
+      visitas_mensais: p.visitasMensais,
+      equipe: p.equipe,
+      servicos: p.servicos,
+      execucao: p.execucao,
       prazo_meses: p.prazoMeses,
       validade_dias: p.validadeDias,
-      visitas_mensais: p.visitasMensais ?? 2,
-      equipe: p.equipe ?? 7,
     })
     .select("*")
     .single();

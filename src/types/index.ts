@@ -34,14 +34,15 @@ export interface Agendamento {
 export interface Proposta {
   id: string;
   clienteId?: string;
-  condo: string;
-  data: string;          // dd/mm/aaaa
-  valorMensal: number;   // ex.: 3200
-  escopo: string;        // chave do modelo (ver ESCOPOS)
+  condo: string;          // nome do cliente (texto livre)
+  data: string;           // dd/mm/aaaa
+  valorMensal: number;
+  visitasMensais: number;
+  equipe: number;
+  servicos: string[];     // itens de manutenção selecionados
+  execucao: string[];     // cláusulas de execução selecionadas (texto final)
   prazoMeses: number;
   validadeDias: number;
-  visitasMensais?: number;
-  equipe?: number;
 }
 
 export type Papel = "admin" | "funcionario";
