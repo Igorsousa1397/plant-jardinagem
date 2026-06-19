@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — placeholder 'sem foto' no card de relatório
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando placeholder de foto..."
+
+cat > "src/components/relatorios/ReportCard.tsx" <<'__PLANT_EOF__'
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -88,3 +95,6 @@ function CalIcon() {
     </svg>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/relatorios/ReportCard.tsx"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
