@@ -20,7 +20,7 @@ function rotulo(d: Date): { texto: string; classe: string } {
 
 export function Agenda({ reports }: { reports: Report[] }) {
   const itens = reports
-    .map((r) => ({ r, d: parseBR(r.proximaVisita) }))
+    .map((r) => ({ r, d: parseBR(r.proximaVisita ?? "") }))
     .filter((e): e is { r: Report; d: Date } => e.d !== null)
     .sort((a, b) => a.d.getTime() - b.d.getTime());
 

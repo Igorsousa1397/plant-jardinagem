@@ -36,7 +36,6 @@ export function ReportForm({ report }: { report?: Report }) {
   const [equip, setEquip] = useState<string[]>(report?.equipamentos ?? ["Roçadeira", "Soprador"]);
   const [epi, setEpi] = useState<string[]>(report?.epi ?? ["Luvas", "Botas"]);
   const [obs, setObs] = useState(report?.observacoes ?? "");
-  const [proxima, setProxima] = useState(report ? toISO(report.proximaVisita) : "2025-09-22");
   const [status, setStatus] = useState<Status>(report?.status ?? "Finalizado");
   const [fotosAntes, setFotosAntes] = useState<string[]>(report?.fotosAntes ?? []);
   const [fotosDepois, setFotosDepois] = useState<string[]>(report?.fotosDepois ?? []);
@@ -77,7 +76,6 @@ export function ReportForm({ report }: { report?: Report }) {
       equipamentos: equip,
       epi,
       observacoes: obs,
-      proximaVisita: fmtData(proxima),
       fotosAntes,
       fotosDepois,
     };
@@ -156,10 +154,6 @@ export function ReportForm({ report }: { report?: Report }) {
 
         <Field label="Observações" hint="Ex: reforçar rega nas gramas novas.">
           <textarea rows={3} value={obs} onChange={(e) => setObs(e.target.value)} className={`${inputClass} resize-y`} />
-        </Field>
-
-        <Field label="Próxima visita">
-          <input type="date" value={proxima} onChange={(e) => setProxima(e.target.value)} className={inputClass} />
         </Field>
 
         <Field label="Status">

@@ -48,9 +48,6 @@ export function ReportCard({ r, archived }: { r: Report; archived?: boolean }) {
           <p className="mt-0.5 text-[13px] text-tintaMuda">
             {r.servicos.slice(0, 2).join(" · ")} · {r.duracao}
           </p>
-          <p className="mt-2.5 flex items-center gap-1.5 text-[13px] font-semibold text-verde-700">
-            <CalIcon /> Próxima visita {r.proximaVisita || "—"}
-          </p>
         </div>
       </div>
 
@@ -78,13 +75,5 @@ function Thumb({ url, label }: { url?: string; label: string }) {
         {label}
       </span>
     </div>
-  );
-}
-
-function CalIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" />
-    </svg>
   );
 }

@@ -10,7 +10,7 @@ export interface Report {
   equipamentos: string[];
   epi: string[];
   observacoes: string;
-  proximaVisita: string;
+  proximaVisita?: string;
   fotosAntes: string[];
   fotosDepois: string[];
   arquivado?: boolean;
