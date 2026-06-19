@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — logo no avatar do Perfil
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando avatar do Perfil..."
+
+cat > "src/app/admin/perfil/page.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -126,3 +133,6 @@ export default function PerfilPage() {
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/app/admin/perfil/page.tsx"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
