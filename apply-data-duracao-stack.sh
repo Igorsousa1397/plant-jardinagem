@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — empilha Data/Duração no celular (sem overflow)
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando formulário..."
+
+cat > "src/components/relatorios/ReportForm.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -192,3 +199,6 @@ function PhotoRow({
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/relatorios/ReportForm.tsx"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
