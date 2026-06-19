@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — sem about:blank no mobile + loading 'Gerando PDF'
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando envio ao síndico..."
+
+cat > "src/components/relatorios/ReportPreview.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -201,3 +208,6 @@ function Bloco({ titulo, itens }: { titulo: string; itens: string[] }) {
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/relatorios/ReportPreview.tsx"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
