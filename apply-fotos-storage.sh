@@ -1,3 +1,91 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — fotos via Supabase Storage (com compressão)
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Aplicando upload de fotos pro Storage..."
+
+mkdir -p "supabase/migrations"
+cat > "supabase/migrations/0008_storage_relatorios.sql" <<'__PLANT_EOF__'
+-- Bucket público + políticas para upload de fotos dos relatórios
+insert into storage.buckets (id, name, public)
+  values ('relatorios', 'relatorios', true)
+  on conflict (id) do update set public = true;
+
+drop policy if exists "relatorios_read" on storage.objects;
+create policy "relatorios_read" on storage.objects
+  for select using (bucket_id = 'relatorios');
+
+drop policy if exists "relatorios_insert" on storage.objects;
+create policy "relatorios_insert" on storage.objects
+  for insert to authenticated with check (bucket_id = 'relatorios');
+
+drop policy if exists "relatorios_delete" on storage.objects;
+create policy "relatorios_delete" on storage.objects
+  for delete to authenticated using (bucket_id = 'relatorios');
+__PLANT_EOF__
+echo "  ok  supabase/migrations/0008_storage_relatorios.sql"
+
+mkdir -p "src/lib"
+cat > "src/lib/fotos.ts" <<'__PLANT_EOF__'
+import { createClient } from "@/lib/supabase/client";
+
+/** Redimensiona (lado máximo) e recodifica como JPEG no navegador. */
+export async function comprimirImagem(file: File, maxLado = 1500, quality = 0.8): Promise<Blob> {
+  const dataUrl = await new Promise<string>((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result as string);
+    r.onerror = () => rej(new Error("Falha ao ler o arquivo."));
+    r.readAsDataURL(file);
+  });
+
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error("Falha ao carregar a imagem."));
+    i.src = dataUrl;
+  });
+
+  let { width, height } = img;
+  if (width > maxLado || height > maxLado) {
+    if (width >= height) {
+      height = Math.round((height * maxLado) / width);
+      width = maxLado;
+    } else {
+      width = Math.round((width * maxLado) / height);
+      height = maxLado;
+    }
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas indisponível.");
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return await new Promise<Blob>((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error("Falha ao compactar a imagem."))), "image/jpeg", quality)
+  );
+}
+
+/** Compacta, envia ao bucket `relatorios` e devolve a URL pública. */
+export async function uploadFoto(file: File): Promise<string> {
+  const blob = await comprimirImagem(file);
+  const sb = createClient();
+  const nome = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  const { error } = await sb.storage.from("relatorios").upload(nome, blob, {
+    contentType: "image/jpeg",
+    upsert: false,
+  });
+  if (error) throw error;
+  const { data } = sb.storage.from("relatorios").getPublicUrl(nome);
+  return data.publicUrl;
+}
+__PLANT_EOF__
+echo "  ok  src/lib/fotos.ts"
+
+mkdir -p "src/components/relatorios"
+cat > "src/components/relatorios/ReportForm.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -198,3 +286,8 @@ function PhotoRow({
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/relatorios/ReportForm.tsx"
+
+echo ""
+echo "Rode o SQL do bucket/políticas e o de limpeza no Supabase. Depois: commit + push."
