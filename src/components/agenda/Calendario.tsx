@@ -15,10 +15,12 @@ function iso(d: Date) {
 
 export function Calendario({
   marcados,
+  concluidos,
   selecionado,
   onPick,
 }: {
   marcados: Set<string>;
+  concluidos?: Set<string>;
   selecionado?: string;
   onPick: (d: Date) => void;
 }) {
@@ -67,6 +69,7 @@ export function Calendario({
           if (!d) return <div key={i} />;
           const di = iso(d);
           const temAg = marcados.has(di);
+          const temConcluido = concluidos?.has(di) ?? false;
           const ehHoje = di === isoHoje;
           const sel = di === selecionado;
           return (
@@ -83,7 +86,9 @@ export function Calendario({
               )}
             >
               {d.getDate()}
-              {temAg && !sel && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-dourado" />}
+              {(temAg || temConcluido) && !sel && (
+                <span className={cn("absolute bottom-1 h-1 w-1 rounded-full", temAg ? "bg-dourado" : "bg-verde-600")} />
+              )}
             </button>
           );
         })}

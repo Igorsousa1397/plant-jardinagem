@@ -29,6 +29,7 @@ export interface Agendamento {
   condo: string;
   data: string;        // dd/mm/aaaa
   observacao: string;
+  concluido: boolean;
 }
 
 export interface Proposta {

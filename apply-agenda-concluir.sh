@@ -1,3 +1,244 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — concluir agendamento + histórico por data
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Aplicando agenda: concluir + histórico..."
+
+mkdir -p "supabase/migrations"
+cat > "supabase/migrations/0009_agendamento_concluido.sql" <<'__PLANT_EOF__'
+-- Marcar agendamento como concluído (histórico)
+alter table public.agendamentos
+  add column if not exists concluido boolean not null default false;
+__PLANT_EOF__
+echo "  ok  supabase/migrations/0009_agendamento_concluido.sql"
+
+mkdir -p "src/types"
+cat > "src/types/index.ts" <<'__PLANT_EOF__'
+export type Status = "Finalizado" | "Em andamento" | "Agendado" | "Atrasado";
+
+export interface Report {
+  id: string;
+  condo: string;
+  data: string;
+  duracao: string;
+  status: Status;
+  servicos: string[];
+  equipamentos: string[];
+  epi: string[];
+  observacoes: string;
+  proximaVisita: string;
+  fotosAntes: string[];
+  fotosDepois: string[];
+  arquivado?: boolean;
+}
+
+export interface Cliente {
+  id: string;
+  nome: string;
+  sindico?: string;
+  telefone?: string;
+}
+
+export interface Agendamento {
+  id: string;
+  clienteId?: string;
+  condo: string;
+  data: string;        // dd/mm/aaaa
+  observacao: string;
+  concluido: boolean;
+}
+
+export interface Proposta {
+  id: string;
+  clienteId?: string;
+  condo: string;          // nome do cliente (texto livre)
+  data: string;           // dd/mm/aaaa
+  valorMensal: number;
+  visitasMensais: number;
+  equipe: number;
+  servicos: string[];     // itens de manutenção selecionados
+  execucao: string[];     // cláusulas de execução selecionadas (texto final)
+  prazoMeses: number;
+  validadeDias: number;
+}
+
+export type Papel = "admin" | "funcionario";
+__PLANT_EOF__
+echo "  ok  src/types/index.ts"
+
+mkdir -p "src/lib"
+cat > "src/lib/agendamentos.ts" <<'__PLANT_EOF__'
+import { createClient } from "@/lib/supabase/client";
+import type { Agendamento } from "@/types";
+import { fmtData } from "@/lib/utils";
+
+interface Row {
+  id: string;
+  cliente_id: string | null;
+  condo: string;
+  data: string;          // YYYY-MM-DD
+  observacao: string | null;
+  concluido: boolean;
+}
+
+function toAgendamento(r: Row): Agendamento {
+  return {
+    id: r.id,
+    clienteId: r.cliente_id ?? undefined,
+    condo: r.condo,
+    data: fmtData(r.data),
+    observacao: r.observacao ?? "",
+    concluido: r.concluido ?? false,
+  };
+}
+
+export async function listAgendamentos(): Promise<Agendamento[]> {
+  const sb = createClient();
+  const { data, error } = await sb.from("agendamentos").select("*").order("data");
+  if (error) throw error;
+  return (data as Row[]).map(toAgendamento);
+}
+
+export async function createAgendamento(a: {
+  condo: string;
+  clienteId?: string;
+  dataISO: string;       // YYYY-MM-DD
+  observacao?: string;
+}): Promise<Agendamento> {
+  const sb = createClient();
+  const { data, error } = await sb
+    .from("agendamentos")
+    .insert({
+      condo: a.condo,
+      cliente_id: a.clienteId ?? null,
+      data: a.dataISO,
+      observacao: a.observacao ?? "",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return toAgendamento(data as Row);
+}
+
+export async function deleteAgendamento(id: string): Promise<void> {
+  const sb = createClient();
+  const { error } = await sb.from("agendamentos").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function setAgendamentoConcluido(id: string, concluido: boolean): Promise<void> {
+  const sb = createClient();
+  const { error } = await sb.from("agendamentos").update({ concluido }).eq("id", id);
+  if (error) throw error;
+}
+__PLANT_EOF__
+echo "  ok  src/lib/agendamentos.ts"
+
+mkdir -p "src/components/agenda"
+cat > "src/components/agenda/Calendario.tsx" <<'__PLANT_EOF__'
+"use client";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function iso(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function Calendario({
+  marcados,
+  concluidos,
+  selecionado,
+  onPick,
+}: {
+  marcados: Set<string>;
+  concluidos?: Set<string>;
+  selecionado?: string;
+  onPick: (d: Date) => void;
+}) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const [mes, setMes] = useState(() => new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+
+  const primeiroDiaSemana = mes.getDay();
+  const diasNoMes = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).getDate();
+
+  const celulas: (Date | null)[] = [];
+  for (let i = 0; i < primeiroDiaSemana; i++) celulas.push(null);
+  for (let d = 1; d <= diasNoMes; d++) celulas.push(new Date(mes.getFullYear(), mes.getMonth(), d));
+
+  const isoHoje = iso(hoje);
+
+  return (
+    <div className="rounded-2xl border border-linha bg-surface p-3 shadow-s1">
+      <div className="mb-2 flex items-center justify-between px-1">
+        <button
+          onClick={() => setMes(new Date(mes.getFullYear(), mes.getMonth() - 1, 1))}
+          aria-label="Mês anterior"
+          className="grid h-8 w-8 place-items-center rounded-full text-verde-700 hover:bg-verde-50"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <span className="font-display text-[15px] font-semibold text-verde-900">
+          {MESES[mes.getMonth()]} {mes.getFullYear()}
+        </span>
+        <button
+          onClick={() => setMes(new Date(mes.getFullYear(), mes.getMonth() + 1, 1))}
+          aria-label="Próximo mês"
+          className="grid h-8 w-8 place-items-center rounded-full text-verde-700 hover:bg-verde-50"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {SEMANA.map((s, i) => (
+          <div key={i} className="py-1 font-mono text-[10px] font-semibold uppercase text-tintaMuda">
+            {s}
+          </div>
+        ))}
+        {celulas.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const di = iso(d);
+          const temAg = marcados.has(di);
+          const temConcluido = concluidos?.has(di) ?? false;
+          const ehHoje = di === isoHoje;
+          const sel = di === selecionado;
+          return (
+            <button
+              key={i}
+              onClick={() => onPick(d)}
+              className={cn(
+                "relative mx-auto grid h-9 w-9 place-items-center rounded-full text-[13px] font-semibold",
+                sel
+                  ? "bg-verde-700 text-white"
+                  : ehHoje
+                    ? "bg-verde-50 text-verde-700 ring-1 ring-verde-300"
+                    : "text-tinta hover:bg-verde-50"
+              )}
+            >
+              {d.getDate()}
+              {(temAg || temConcluido) && !sel && (
+                <span className={cn("absolute bottom-1 h-1 w-1 rounded-full", temAg ? "bg-dourado" : "bg-verde-600")} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+__PLANT_EOF__
+echo "  ok  src/components/agenda/Calendario.tsx"
+
+mkdir -p "src/components/agenda"
+cat > "src/components/agenda/AgendaSection.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, ChevronDown, ChevronUp, CheckCircle2, Circle, Plus } from "lucide-react";
@@ -277,3 +518,9 @@ export function AgendaSection() {
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/agenda/AgendaSection.tsx"
+
+echo ""
+echo "Rode no Supabase: alter table public.agendamentos add column if not exists concluido boolean not null default false;"
+echo "Depois: git add -A && git commit -m \"feat: concluir agendamento e histórico por data\" && git push"

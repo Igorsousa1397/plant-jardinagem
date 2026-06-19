@@ -8,6 +8,7 @@ interface Row {
   condo: string;
   data: string;          // YYYY-MM-DD
   observacao: string | null;
+  concluido: boolean;
 }
 
 function toAgendamento(r: Row): Agendamento {
@@ -17,6 +18,7 @@ function toAgendamento(r: Row): Agendamento {
     condo: r.condo,
     data: fmtData(r.data),
     observacao: r.observacao ?? "",
+    concluido: r.concluido ?? false,
   };
 }
 
@@ -51,5 +53,11 @@ export async function createAgendamento(a: {
 export async function deleteAgendamento(id: string): Promise<void> {
   const sb = createClient();
   const { error } = await sb.from("agendamentos").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function setAgendamentoConcluido(id: string, concluido: boolean): Promise<void> {
+  const sb = createClient();
+  const { error } = await sb.from("agendamentos").update({ concluido }).eq("id", id);
   if (error) throw error;
 }
