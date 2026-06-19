@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — adiciona 'Cinto talabarte' aos EPIs
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando EPIs..."
+
+cat > "src/lib/constants.ts" <<'__PLANT_EOF__'
 import type { Status } from "@/types";
 
 export const SERVICOS = [
@@ -45,3 +52,6 @@ export const EMPRESA = {
   instagram: "@plantjardinagem",
   endereco: "Av. Benedito de Andrade, 358 - Pereira Barreto - São Paulo",
 };
+__PLANT_EOF__
+echo "  ok  src/lib/constants.ts"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
