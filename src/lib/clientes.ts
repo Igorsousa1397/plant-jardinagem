@@ -60,3 +60,28 @@ export async function restoreCliente(id: string): Promise<void> {
   const { error } = await sb.from("clientes").update({ arquivado: false }).eq("id", id);
   if (error) throw error;
 }
+
+/** Conta registros (relatórios, propostas, agendamentos) ligados ao cliente pelo nome. */
+export async function contarVinculos(nome: string): Promise<number> {
+  const sb = createClient();
+  let total = 0;
+  for (const tabela of ["relatorios", "propostas", "agendamentos"] as const) {
+    const { count, error } = await sb.from(tabela).select("id", { count: "exact", head: true }).eq("condo", nome);
+    if (error) throw error;
+    total += count ?? 0;
+  }
+  return total;
+}
+
+/** Exclui de vez. Bloqueia se houver registros vinculados. */
+export async function deleteCliente(id: string, nome: string): Promise<void> {
+  const vinculos = await contarVinculos(nome);
+  if (vinculos > 0) {
+    throw new Error(
+      `Este cliente tem ${vinculos} registro(s) vinculado(s) (relatórios, propostas ou agendamentos). Exclua ou desvincule esses registros antes de remover o cliente.`
+    );
+  }
+  const sb = createClient();
+  const { error } = await sb.from("clientes").delete().eq("id", id);
+  if (error) throw error;
+}
