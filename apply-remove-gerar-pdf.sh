@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Plant Jardinagem — corrige abertura do WhatsApp (popup) no envio do PDF
+# Plant Jardinagem — remove o botão Gerar PDF do preview
 set -e
 if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
-echo "Atualizando envio ao síndico..."
+echo "Atualizando preview do relatório..."
 
 cat > "src/components/relatorios/ReportPreview.tsx" <<'__PLANT_EOF__'
 "use client";
@@ -151,7 +151,6 @@ export function ReportPreview({ r }: { r: Report }) {
       </article>
 
       <div className="flex gap-3 px-[18px] py-1">
-        <Button variant="gold" block onClick={() => window.open(`/api/relatorios/${r.id}/pdf`, "_blank")}>Gerar PDF</Button>
         <Button block onClick={enviarWhats}>Enviar ao síndico</Button>
       </div>
 
