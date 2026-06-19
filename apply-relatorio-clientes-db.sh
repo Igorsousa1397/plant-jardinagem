@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — dropdown de cliente do relatório vem do banco
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando formulário de relatório..."
+
+cat > "src/components/relatorios/ReportForm.tsx" <<'__PLANT_EOF__'
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -188,3 +195,6 @@ function PhotoRow({
     </div>
   );
 }
+__PLANT_EOF__
+echo "  ok  src/components/relatorios/ReportForm.tsx"
+echo "Feito. Reinicie o npm run dev (ou commit + push)."
