@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+# Plant Jardinagem — PDF do relatório mais robusto (embute fotos, maxDuration, tratamento de erro)
+set -e
+if [ ! -f package.json ]; then echo "Rode na raiz do projeto."; exit 1; fi
+echo "Atualizando rota do PDF do relatório..."
+
+mkdir -p "src/app/api/relatorios/[id]/pdf"
+cat > "src/app/api/relatorios/[id]/pdf/route.ts" <<'__PLANT_EOF__'
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
@@ -97,3 +105,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return new NextResponse("Erro ao gerar o PDF", { status: 500 });
   }
 }
+__PLANT_EOF__
+echo "  ok  src/app/api/relatorios/[id]/pdf/route.ts"
+echo "Feito. git add -A && git commit && git push (o deploy na Vercel aplica o novo tempo limite)."
